@@ -3,14 +3,14 @@ package es.library.springboot.services;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import es.library.springboot.DTOs.AuthorDTO;
 import es.library.springboot.DTOs.BookDTO;
 import es.library.springboot.DTOs.PageResponse;
+import es.library.springboot.exceptions.EntityNotFoundException;
 import es.library.springboot.mapper.AuthorMapper;
 import es.library.springboot.mapper.BookMapper;
 import es.library.springboot.mapper.PageMapper;
@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthorService 
 {
 	private final AuthorRepository autRepositorio;
@@ -27,28 +28,28 @@ public class AuthorService
 	private final BookMapper bookMapper;
 	private final PageMapper pageMapper;
 	
-	public List<AuthorDTO> obtenerAutores()
-	{
-		return autMapper.toAutDTOList(
-				autRepositorio.findAll(Sort.by(Sort.Direction.ASC, "nombreAutor"))
-		);
-	}
+	Pageable pageable;
 	
+	@Transactional(readOnly = true)
 	public PageResponse<AuthorDTO> obtenerAutoresPaginados(int page, int size)
 	{
-		Pageable pageable = PageRequest.of(page, size, Sort.by("nombreAutor").ascending());
+		pageable = PageableService.getPageable(page, size, "nombreAutor");
+		
         Page<Author> pageAutores = autRepositorio.findAll(pageable);
 
         return pageMapper.toPageResponse(pageAutores, autMapper::toAutDTO);
 	}
 	
+	@Transactional(readOnly = true)
 	public List<BookDTO> obtenerLibrosPorAutor(String nombreAutor) 
 	{
-	    return autRepositorio.findByNombreAutor(nombreAutor)
-	            .map(author -> author.getLibros().stream()
-	                    .map(bookMapper::toBookDTO)
-	                    .toList())
-	            .orElse(List.of());
+	    Author autor = autRepositorio.findByNombreAutor(nombreAutor)
+	            .orElseThrow(() ->
+	                new EntityNotFoundException("Author not found"));
+
+	    return autor.getLibros().stream()
+	            .map(bookMapper::toBookDTO)
+	            .toList();
 	}
 	
 	public Author guardarAutor(Author autor)

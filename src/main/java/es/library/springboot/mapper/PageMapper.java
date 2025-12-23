@@ -10,14 +10,22 @@ import es.library.springboot.DTOs.PageResponse;
 @Mapper(componentModel = "spring")
 public interface PageMapper
 {
-    default <D, E> PageResponse<D> toPageResponse(Page<E> page, Function<E, D> mapper) 
-    {
+    default <E, D> PageResponse<D> toPageResponse(
+            Page<E> page,
+            Function<E, D> mapper
+    ) {
         return new PageResponse<>(
-                page.getContent().stream().map(mapper).toList(),
-                page.getNumber(),
-                page.getSize(),
+                page.getContent()
+                        .stream()
+                        .map(mapper)
+                        .toList(),
+                page.getNumber(),           
+                page.getSize(),             
                 page.getTotalElements(),
-                page.getTotalPages()
+                page.getTotalPages(),
+                page.getSort().isSorted(),
+                page.isFirst(),
+                page.isLast()
         );
     }
 }

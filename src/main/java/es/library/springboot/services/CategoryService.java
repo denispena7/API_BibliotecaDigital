@@ -1,16 +1,14 @@
 package es.library.springboot.services;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import es.library.springboot.DTOs.BookDTO;
 import es.library.springboot.DTOs.CategoryDTO;
 import es.library.springboot.DTOs.PageResponse;
+import es.library.springboot.exceptions.EntityNotFoundException;
 import es.library.springboot.mapper.BookMapper;
 import es.library.springboot.mapper.CategoryMapper;
 import es.library.springboot.mapper.PageMapper;
@@ -22,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CategoryService 
 {
 	private final CategoryRepository catRepositorio;
@@ -30,24 +29,25 @@ public class CategoryService
 	private final BookMapper bookMapper;
 	private final PageMapper pageMapper;
 	
-	public List<CategoryDTO> obtenerCategorias()
-	{
-		return catMapper.toCatDTOList(
-				catRepositorio.findAll(Sort.by(Sort.Direction.ASC, "nombreCategoria"))
-		);
-	}
+	Pageable pageable;
 	
+	@Transactional(readOnly = true)
 	public PageResponse<CategoryDTO> obtenerCategoriasPaginadas(int page, int size)
 	{
-		Pageable pageable = PageRequest.of(page, size, Sort.by("nombreCategoria").ascending());
+		pageable = PageableService.getPageable(page, size, "nombreCategoria");
+		
         Page<Category> pageAutores = catRepositorio.findAll(pageable);
 
         return pageMapper.toPageResponse(pageAutores, catMapper::toCatDTO);
 	}
 	
+	@Transactional(readOnly = true)
 	public PageResponse<BookDTO> obtenerLibrosPorCategoria(String nCategoria, int page, int size) 
 	{
-	    Pageable pageable = PageRequest.of(page, size, Sort.by("tituloLibro").ascending());
+		catRepositorio.findByNombreCategoria(nCategoria)
+	        .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+		
+		pageable = PageableService.getPageable(page, size, "tituloLibro");
 
 	    Page<Book> pageLibros = bookRepositorio.findByCategoriasNombreCategoria(pageable, nCategoria);
 

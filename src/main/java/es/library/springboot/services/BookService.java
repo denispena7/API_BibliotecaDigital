@@ -1,16 +1,15 @@
 package es.library.springboot.services;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import es.library.springboot.DTOs.BookDTO;
 import es.library.springboot.DTOs.PageResponse;
+import es.library.springboot.exceptions.EntityNotFoundException;
 import es.library.springboot.mapper.BookMapper;
 import es.library.springboot.mapper.PageMapper;
 import es.library.springboot.models.Book;
@@ -19,48 +18,52 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BookService
 {
 	private final BookRepository bookRepositorio;
 	private final BookMapper bookMapper;
 	private final PageMapper pageMapper;
 	
-	public PageResponse<BookDTO> obtenerLibrosPaginados(int page, int size)
+	Pageable pageable;
+	
+	@Transactional(readOnly = true)
+	public BookDTO obtenerLibro(Long id)
 	{
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Book> pageLibros = bookRepositorio.findAllByOrderByTituloLibroAsc(pageable);
-
-        return pageMapper.toPageResponse(pageLibros, bookMapper::toBookDTO);
+		return bookRepositorio.findById(id)
+				.map(bookMapper::toBookDTO)
+				.orElseThrow(() ->
+						new EntityNotFoundException("Book not found"));
 	}
 	
-	public Optional<BookDTO> obtenerLibro(String name)
-	{
-        return bookRepositorio.findByTituloLibro(name)
-                .map(bookMapper::toBookDTO);
-	}
-	
+	@Transactional(readOnly = true)
 	public List<BookDTO> obtenerLibrosxCoincidencia(String name)
 	{
-        return bookMapper.toBookDTOList(
-        		bookRepositorio.buscarPorCoincidencia(name));
+        return bookRepositorio.findByTituloLibroContaining(name).stream()
+        		.map(bookMapper::toBookDTO)
+        		.toList();
 	}
 	
+	@Transactional(readOnly = true)
 	public PageResponse<BookDTO> obtenerLibrosxCategoriayAutor(String cat, String aut, int page, int size) 
 	{
-	    Pageable pageable = PageRequest.of(page, size, Sort.by("tituloLibro").ascending());
+		pageable = PageableService.getPageable(page, size, "tituloLibro");
 
 	    Page<Book> pageLibros;
+	    
+	    String categoria = (cat == null) ? "Todas" : cat;
+	    String autor = (aut == null) ? "Todos" : aut;
 		
-	    if (cat.equals("Todas") && aut.equals("Todos"))
+	    if (categoria.equals("Todas") && autor.equals("Todos"))
 	    {
 	    	pageLibros = bookRepositorio.findAll(pageable); 	
 	    }
-	    else if (cat.equals("Todas"))
+	    else if (categoria.equals("Todas"))
 	    {
 	    	pageLibros = bookRepositorio
 	                .findByAutorNombreAutor(pageable, aut);
 	    }
-	    else if (aut.equals("Todos"))
+	    else if (autor.equals("Todos"))
 	    {
 	    	pageLibros = bookRepositorio
 	                .findByCategoriasNombreCategoria(pageable, cat);

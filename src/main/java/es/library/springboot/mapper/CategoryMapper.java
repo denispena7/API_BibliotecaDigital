@@ -10,6 +10,8 @@ import es.library.springboot.models.Category;
 @Mapper(componentModel = "spring")
 public interface CategoryMapper 
 {
-	CategoryDTO toCatDTO(Category category);	
+	CategoryDTO toCatDTO(Category category);
+	//Category toCatEnt(CategoryDTO catDTO);
 	List<CategoryDTO> toCatDTOList(List<Category> categorias);
+	//List<Category> toCatEntList(List<CategoryDTO> catsDTO);
 }

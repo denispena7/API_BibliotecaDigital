@@ -1,6 +1,5 @@
 package es.library.springboot.controllers;
 
-import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,8 +7,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.library.springboot.DTOs.ApiResponse;
+import es.library.springboot.DTOs.PageResponse;
 import es.library.springboot.DTOs.UserDTO;
 import es.library.springboot.models.User;
 import es.library.springboot.services.UserService;
@@ -17,23 +19,38 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/usuarios")
+@RequestMapping("/api/users")
 public class UserController 
 {
 	private final UserService service;
 	
-	@GetMapping("/consulta_usuarios")
-	public List<UserDTO> listarUsuarios()
+	@GetMapping(headers = "Api-Version=1")
+	public ResponseEntity<ApiResponse<PageResponse<UserDTO>>> listarUsuarios(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size)
 	{
-		return service.obtenerUsuarios();
+		PageResponse<UserDTO> users = service.obtenerUsuarios(page, size);
+		
+		return ResponseEntity.ok(
+				ApiResponse.<PageResponse<UserDTO>>builder()
+				.data(users)
+				.ok(true)
+				.message("success")
+				.build());
 	}
 	
-	@GetMapping("/consulta_usuario/{nombre}")
-	public ResponseEntity<UserDTO> obtenerUsuario(@PathVariable String nombre)
+	@GetMapping(value = "/{id}", headers = "Api-Version=1")
+	public ResponseEntity<ApiResponse<UserDTO>> obtenerUsuario(@PathVariable Long id) 
 	{
-	    return service.obtenerUsuario(nombre)
-	            .map(ResponseEntity::ok)
-	            .orElseGet(() -> ResponseEntity.notFound().build());
+	    UserDTO user = service.obtenerUsuario(id);
+
+	    return ResponseEntity.ok(
+	            ApiResponse.<UserDTO>builder()
+	                    .data(user)
+	                    .ok(true)
+	                    .message("success")
+	                    .build()
+	    );
 	}
 	
 	@PostMapping("/alta_usuario")

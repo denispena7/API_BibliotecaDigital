@@ -31,7 +31,7 @@ public class Book
 	private String estadoLibro;
 	private String portadaLibro;
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "idAutorFK", foreignKey = @ForeignKey(name="fk_libros_autores") )
 	private Author autor;
 	
@@ -46,7 +46,7 @@ public class Book
     @OneToMany(mappedBy = "libro")
     private List<Rating> puntuaciones;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinTable(
     		name="prestamos_libros",
     		joinColumns=@JoinColumn(name="idLibroPrestFK"),

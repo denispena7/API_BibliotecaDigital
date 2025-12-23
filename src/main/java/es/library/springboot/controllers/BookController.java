@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.library.springboot.DTOs.ApiResponse;
 import es.library.springboot.DTOs.BookDTO;
 import es.library.springboot.DTOs.PageResponse;
 import es.library.springboot.models.Book;
@@ -20,42 +21,68 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/libros")
+@RequestMapping("/api/books")
 public class BookController 
 {
 	private final BookService service;
 	
-	@GetMapping("/librosPaginados")
-	public PageResponse<BookDTO> obtenerLibros(
-	        @RequestParam(defaultValue = "0") int page,
-	        @RequestParam(defaultValue = "10") int size
-	) 
+//	@GetMapping(headers = "Api-Version=1")
+//	public ResponseEntity<ApiResponse<PageResponse<BookDTO>>> obtenerLibros(
+//	        @RequestParam(defaultValue = "0") int page,
+//	        @RequestParam(defaultValue = "10") int size
+//	) 
+//	{
+//		PageResponse<BookDTO> libros = service.obtenerLibrosPaginados(page, size);
+//		
+//	    return ResponseEntity.ok(
+//	    		ApiResponse.<PageResponse<BookDTO>>builder()
+//	    		.data(libros)
+//	    		.ok(true)
+//	    		.message("success")
+//	    		.build());
+//	}
+	
+	@GetMapping(value = "/{id}", headers = "Api-Version=1")
+	public ResponseEntity<ApiResponse<BookDTO>> obtenerLibro(@PathVariable Long id)
 	{
-	    return service.obtenerLibrosPaginados(page, size);
+		BookDTO book = service.obtenerLibro(id);
+		
+		return ResponseEntity.ok(
+				ApiResponse.<BookDTO>builder()
+				.data(book)
+				.ok(true)
+				.message("success")
+				.build());
 	}
 	
-	@GetMapping("/consulta_libros/{nombre}")
-	public ResponseEntity<BookDTO> obtenerLibro(@PathVariable String nombre)
+	@GetMapping(value = "/search/{coincidencia}", headers = "Api-Version=1")
+	public ResponseEntity<ApiResponse<List<BookDTO>>> obtenerBusquedaLibros(@PathVariable String coincidencia)
 	{
-		return service.obtenerLibro(nombre)
-				.map(ResponseEntity::ok)
-				.orElseGet(() -> ResponseEntity.notFound().build());
+		List<BookDTO> books = service.obtenerLibrosxCoincidencia(coincidencia);
+		
+		return ResponseEntity.ok(
+				ApiResponse.<List<BookDTO>>builder()
+				.data(books)
+				.ok(true)
+				.message("success")
+				.build());
 	}
 	
-	@GetMapping("/busqueda_libros/{coincidencia}")
-	public List<BookDTO> obtenerBusquedaLibros(@PathVariable String coincidencia)
-	{
-		return service.obtenerLibrosxCoincidencia(coincidencia);
-	}
-	
-	@GetMapping("/consulta_librosFiltrados")
-	public PageResponse<BookDTO> obtenerLibrosxCatyAut(
-	        @RequestParam(defaultValue = "Todas") String categoria,
-	        @RequestParam(defaultValue = "Todos") String autor,
+	@GetMapping(headers = "Api-Version=1")
+	public ResponseEntity<ApiResponse<PageResponse<BookDTO>>> obtenerLibrosxCatyAut(
+	        @RequestParam(required = false) String categoria,
+	        @RequestParam(required = false) String autor,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size)
 	{
-		return service.obtenerLibrosxCategoriayAutor(categoria, autor, page, size);
+		PageResponse<BookDTO> books = service.obtenerLibrosxCategoriayAutor(categoria, autor, page, size);
+		
+		return ResponseEntity.ok(
+				ApiResponse.<PageResponse<BookDTO>>builder()
+				.data(books)
+				.ok(true)
+				.message("success")
+				.build());
 	}
 	
 	@PostMapping("/alta_libro")

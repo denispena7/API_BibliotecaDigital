@@ -12,5 +12,5 @@ import es.library.springboot.models.RatingId;
 public interface RatingRepository extends JpaRepository<Rating, RatingId>
 {
     List<Rating> findByLibroTituloLibro(String tituloLibro);
-    List<Rating> findByUsuario_NombreUsuario(String nombreUsuario);
+    List<Rating> findByUsuarioNombreUsuario(String nombreUsuario);
 }
