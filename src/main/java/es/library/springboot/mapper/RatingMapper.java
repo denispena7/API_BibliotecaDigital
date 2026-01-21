@@ -1,29 +1,37 @@
 package es.library.springboot.mapper;
 
-import java.util.List;
-
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import es.library.springboot.DTOs.RatingDTO;
+import es.library.springboot.DTOs.requests.RatingRequestDTO;
+import es.library.springboot.DTOs.responses.RatingResponseDTO;
+import es.library.springboot.DTOs.responses.RatingSingleResponseDTO;
 import es.library.springboot.models.Rating;
 
 @Mapper(componentModel = "spring")
 public interface RatingMapper 
 {
-	@Mapping(source = "usuario.nombreUsuario", target = "nombreUsuario")
+	@Mapping(source = "usuario.emailUsuario", target = "emailUsuario")
 	@Mapping(source = "libro.tituloLibro", target = "tituloLibro")
     @Mapping(target = "puntuaciones", expression = "java(List.of(rating.getPuntuacion()))")
-    RatingDTO toRatingDTO(Rating rating);
-    
-    List<RatingDTO> toRatingDTOList(List<Rating> ratings);
+    RatingResponseDTO toRatingDTO(Rating rating);
+	
+	@Mapping(source = "usuario.emailUsuario", target = "emailUsuario")
+	@Mapping(source = "libro.tituloLibro", target = "tituloLibro")
+	@Mapping(source = "puntuacion", target = "puntuacion")
+	RatingSingleResponseDTO toRatingResponse(Rating rating);
+	
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "puntuacion", source = "puntuacion")
+	Rating toRatingEntity(RatingRequestDTO rating);
 
     // Este método sirve si ya tienes varias puntuaciones de un libro
-//    default RatingDTO toAggregatedRatingDTO(List<Rating> ratings) {
-//        return RatingDTO.builder()
+//    default RatingResponseDTO toAggregatedRatingDTO(List<Rating> ratings) {
+//        return RatingResponseDTO.builder()
 //                .puntuaciones(ratings.stream()
 //                        .map(Rating::getPuntuacion)
 //                        .toList())
 //                .build();
-//    }
+//	}
 }

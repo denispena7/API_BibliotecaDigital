@@ -1,12 +1,12 @@
-package es.library.springboot.DTOs;
+package es.library.springboot.DTOs.responses;
 
 import java.time.LocalDate;
 
-public record LoanDTO(
+public record LoanResponseDTO(
 		Long idPrestamo,
 		LocalDate fechaInicio,
 		LocalDate fechaDevolucionEsperada,
 		LocalDate fechaDevolucionReal,
 		String estado,
-		String nombreUsuario
+		String emailUsuario
 		) {}

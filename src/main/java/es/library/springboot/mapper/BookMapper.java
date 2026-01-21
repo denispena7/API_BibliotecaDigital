@@ -3,10 +3,12 @@ package es.library.springboot.mapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import es.library.springboot.DTOs.BookDTO;
+import es.library.springboot.DTOs.requests.BookRequestDTO;
+import es.library.springboot.DTOs.responses.BookResponseDTO;
 import es.library.springboot.models.Book;
 import es.library.springboot.models.Category;
 
@@ -15,9 +17,15 @@ public interface BookMapper
 {
     @Mapping(source = "autor.nombreAutor", target = "nombreAutor")
     @Mapping(target = "categorias", expression = "java(mapCategorias(book.getCategorias()))")
-    BookDTO toBookDTO(Book book);
+    BookResponseDTO toBookDTO(Book book);
 
-    List<BookDTO> toBookDTOList(List<Book> books);
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "tituloLibro", source = "tituloLibro")
+    @Mapping(target = "anioPublicacion", source = "anioPublicacion")
+    @Mapping(target = "sinopsisLibro", source = "sinopsisLibro")
+    @Mapping(target = "estadoLibro", source = "estadoLibro")
+    @Mapping(target = "autor.nombreAutor", source = "nombreAutor")
+    Book toBookDTO(BookRequestDTO libro);
 
     // Método auxiliar para transformar las categorías
     default List<String> mapCategorias(List<Category> categorias) 
@@ -26,4 +34,5 @@ public interface BookMapper
                 .map(Category::getNombreCategoria)
                 .collect(Collectors.toList());
     }
+
 }

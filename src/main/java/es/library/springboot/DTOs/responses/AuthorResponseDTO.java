@@ -1,8 +1,8 @@
-package es.library.springboot.DTOs;
+package es.library.springboot.DTOs.responses;
 
 import java.time.LocalDate;
 
-public record AuthorDTO(
+public record AuthorResponseDTO(
 		Long idAutor,
 		String nombreAutor,
 		String nacionalidadAutor,

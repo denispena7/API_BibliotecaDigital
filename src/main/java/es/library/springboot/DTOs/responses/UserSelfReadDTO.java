@@ -1,8 +1,6 @@
-package es.library.springboot.DTOs;
+package es.library.springboot.DTOs.responses;
 
-public record UserDTO(
-		Long idUsuario,
-		String nombreUsuario,
+public record UserSelfReadDTO(
 		String nombreRealUsuario,
 		String apellidosUsuario,
 		String direccionUsuario,
@@ -11,6 +9,5 @@ public record UserDTO(
 		int cpUsuario,
 		int telefonoUsuario,
 		String emailUsuario,
-		int tipoUsuario,
 		String iconoUsuario
 	) {}

@@ -17,10 +17,7 @@ public interface BookRepository extends JpaRepository<Book, Long>
 
 	Optional<Book> findByTituloLibro(String tituloLibro);
 	
-//	@Query("SELECT b FROM Book b WHERE LOWER(b.tituloLibro) LIKE LOWER(CONCAT('%', :name, '%'))")
-//	List<Book> buscarPorCoincidencia(@Param("name") String name);
-	
-	List<Book> findByTituloLibroContaining(String tituloLibro);
+	Page<Book> findByTituloLibroContaining(String tituloLibro, Pageable pageable);
 
     Page<Book> findByAutorNombreAutor(Pageable pageable, String nombreAutor);
 
@@ -29,5 +26,13 @@ public interface BookRepository extends JpaRepository<Book, Long>
     Page<Book> findDistinctByCategorias_NombreCategoriaAndAutor_NombreAutor(
     		String nombreCategoria, String nombreAutor, Pageable pageable);
     
-    List<Book> findByPrestamoIdPrestamo(Long idPrestamo);
+    Page<Book> findByPrestamoIdPrestamo(Long idPrestamo, Pageable pageable);
+
+	Page<Book> findByTituloLibro(String name, Pageable pageable);
+
+	boolean existsByTituloLibro(String tituloLibro);
+
+	boolean existsByIdLibro(Long id);
+
+	List<Book> findByIdLibroIn(List<Integer> libros);
 }

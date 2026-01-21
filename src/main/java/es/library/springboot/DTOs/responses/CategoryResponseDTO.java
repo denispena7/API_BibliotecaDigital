@@ -1,6 +1,6 @@
-package es.library.springboot.DTOs;
+package es.library.springboot.DTOs.responses;
 
-public record CategoryDTO(
+public record CategoryResponseDTO(
 	    long idCategoria,
 	    String nombreCategoria,
 	    String imagenCategoria

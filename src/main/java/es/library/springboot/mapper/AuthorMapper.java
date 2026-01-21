@@ -1,15 +1,20 @@
 package es.library.springboot.mapper;
 
-import java.util.List;
-
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import es.library.springboot.DTOs.AuthorDTO;
+import es.library.springboot.DTOs.requests.AuthorRequestDTO;
+import es.library.springboot.DTOs.responses.AuthorResponseDTO;
 import es.library.springboot.models.Author;
 
 @Mapper(componentModel = "spring")
 public interface AuthorMapper 
 {
-	AuthorDTO toAutDTO(Author autor);
-	List<AuthorDTO> toAutDTOList(List<Author> autores);
+	AuthorResponseDTO toAutDTO(Author autor);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "nombreAutor", source = "nombreAutor")
+    @Mapping(target = "nacionalidadAutor", source = "nacionalidadAutor")
+	Author toAutEnt(AuthorRequestDTO autor);
 }

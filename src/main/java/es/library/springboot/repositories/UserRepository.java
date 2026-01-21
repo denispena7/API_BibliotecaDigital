@@ -10,5 +10,7 @@ import es.library.springboot.models.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> 
 {
-	Optional<User> findByNombreUsuario(String nombreUsuario);
+	Optional<User> findByEmailUsuario(String emailUsuario);
+	boolean existsByEmailUsuario(String emailUsuario);
+	Optional<User> findByIdUsuario(Long id);
 }

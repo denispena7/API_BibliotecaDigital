@@ -11,4 +11,6 @@ import es.library.springboot.models.Author;
 public interface AuthorRepository extends JpaRepository<Author, Long>
 {
 	Optional<Author> findByNombreAutor(String nombreAutor);
+
+	boolean existsByNombreAutor(String nombreAutor);
 }

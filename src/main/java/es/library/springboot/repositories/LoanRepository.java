@@ -12,7 +12,7 @@ import es.library.springboot.models.Loan;
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, Long> 
 {
-	Page<Loan> findByUsuarioNombreUsuario(String nombreUsuario, Pageable pageable);
+	Page<Loan> findByUsuarioIdUsuario(Long idUsuario, Pageable pageable);
 	
     Page<Loan> findByEstadoAndFechaInicioBetween(
             String estado,

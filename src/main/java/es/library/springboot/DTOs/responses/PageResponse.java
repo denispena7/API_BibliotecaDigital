@@ -1,4 +1,4 @@
-package es.library.springboot.DTOs;
+package es.library.springboot.DTOs.responses;
 
 import java.util.List;
 

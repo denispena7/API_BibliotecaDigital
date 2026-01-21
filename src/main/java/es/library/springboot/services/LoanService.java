@@ -5,19 +5,26 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import es.library.springboot.DTOs.BookDTO;
-import es.library.springboot.DTOs.LoanDTO;
-import es.library.springboot.DTOs.PageResponse;
+import es.library.springboot.DTOs.requests.LoanRequestDTO;
+import es.library.springboot.DTOs.requests.LoanUptRequestDTO;
+import es.library.springboot.DTOs.responses.BookResponseDTO;
+import es.library.springboot.DTOs.responses.LoanResponseDTO;
+import es.library.springboot.DTOs.responses.PageResponse;
+import es.library.springboot.config.SecurityUtils;
 import es.library.springboot.exceptions.EntityNotFoundException;
 import es.library.springboot.mapper.BookMapper;
 import es.library.springboot.mapper.LoanMapper;
 import es.library.springboot.mapper.PageMapper;
+import es.library.springboot.models.Book;
 import es.library.springboot.models.Loan;
+import es.library.springboot.models.User;
 import es.library.springboot.repositories.BookRepository;
 import es.library.springboot.repositories.LoanRepository;
+import es.library.springboot.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,6 +34,7 @@ public class LoanService
 {
 	private final LoanRepository loanRepositorio;
 	private final BookRepository bookRepositorio;
+	private final UserRepository userRepositorio;
 	private final LoanMapper loanMapper;
 	private final BookMapper bookMapper;
 	private final PageMapper pageMapper;
@@ -34,27 +42,19 @@ public class LoanService
 	Pageable pageable;
 	
 	@Transactional(readOnly = true)
-	public PageResponse<LoanDTO> obtenerPrestamos(int page, int size)
-	{
+	public PageResponse<LoanResponseDTO> obtenerPrestamosxUsuario(int page, int size)
+	{		
+		User user = SecurityUtils.getCurrentUser();
+		
 		pageable = PageableService.getPageable(page, size, "fechaInicio");
 		
-        Page<Loan> pagePrestamos = loanRepositorio.findAll(pageable);
+        Page<Loan> pagePrestamos = loanRepositorio.findByUsuarioIdUsuario(user.getIdUsuario(), pageable);
 
         return pageMapper.toPageResponse(pagePrestamos, loanMapper::toLoanDTO);
 	}
 	
 	@Transactional(readOnly = true)
-	public PageResponse<LoanDTO> obtenerPrestamosxUsuario(String nU, int page, int size)
-	{
-		pageable = PageableService.getPageable(page, size, "fechaInicio");
-		
-        Page<Loan> pagePrestamos = loanRepositorio.findByUsuarioNombreUsuario(nU, pageable);
-
-        return pageMapper.toPageResponse(pagePrestamos, loanMapper::toLoanDTO);
-	}
-	
-	@Transactional(readOnly = true)
-	public PageResponse<LoanDTO> obtenerPrestamosxFechayEstado(
+	public PageResponse<LoanResponseDTO> obtenerPrestamosxFechayEstado(
 			String estado, String fechaDesde, String fechaHasta, int page, int size) 
 	{
 		pageable = PageableService.getPageable(page, size, "fechaInicio");
@@ -78,40 +78,89 @@ public class LoanService
 	}
 	
 	@Transactional(readOnly = true)
-	public LoanDTO obtenerPrestamo(Long id)
+	public LoanResponseDTO obtenerPrestamo(Long id)
 	{
-        return loanRepositorio.findById(id)
-                .map(loanMapper::toLoanDTO)
-                .orElseThrow(() ->
-                		new EntityNotFoundException("Loan not found"));
+	    Loan loan = loanRepositorio.findById(id)
+	            .orElseThrow(() -> new EntityNotFoundException("Loan not found"));
+
+	    autorizar(loan);
+
+	    return loanMapper.toLoanDTO(loan);
 	}
+
 	
 	@Transactional(readOnly = true)
-	public List<BookDTO> obtenerLibrosPrestamo(Long id)
+	public PageResponse<BookResponseDTO> obtenerLibrosPrestamo(Long id, int page, int size)
 	{
-		loanRepositorio.findById(id)
-		.orElseThrow(() -> new EntityNotFoundException("Loan not found"));
+	    Loan loan = loanRepositorio.findById(id)
+	            .orElseThrow(() -> new EntityNotFoundException("Loan not found"));
+
+	    autorizar(loan);
 		
-		return bookRepositorio.findByPrestamoIdPrestamo(id).stream()
-				.map(bookMapper::toBookDTO)
-				.toList();
+		pageable = PageableService.getPageable(page, size, "tituloLibro");
+		
+        Page<Book> pageBooks = bookRepositorio.findByPrestamoIdPrestamo(id, pageable);
+
+        return pageMapper.toPageResponse(pageBooks, bookMapper::toBookDTO);
+	}
+
+	@Transactional
+	public LoanResponseDTO nuevoPrestamo(LoanRequestDTO prestamo) 
+	{
+		User user = userRepositorio.findById(prestamo.idUsuario())
+				.orElseThrow(() -> new EntityNotFoundException("User not found"));
+		
+		
+		LoanDateValidator.validate(prestamo.fechaInicio());
+		
+		Loan nuevoPrestamo = loanMapper.toLoanEntity(prestamo);
+		
+		
+		nuevoPrestamo.setUsuario(user);
+		nuevoPrestamo.setLibros(getBooks(prestamo.libros()));
+		autorizar(nuevoPrestamo);
+		
+		Loan guardado = loanRepositorio.save(nuevoPrestamo);
+		
+		return loanMapper.toLoanDTO(guardado);
 	}
 	
-	public Loan guardarPrestamo(Loan prestamo)
+	public LoanResponseDTO actualizarPrestamo(Long id, LoanUptRequestDTO prestamo) 
 	{
-		return loanRepositorio.save(prestamo);
+		Loan prest = loanRepositorio.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Loan not found"));
+		
+		autorizar(prest);
+		
+		prest.setFechaDevolucionReal(LocalDate.now());
+		prest.setEstado(prestamo.estado());
+		
+		Loan updated = loanRepositorio.save(prest);
+		
+		return loanMapper.toLoanDTO(updated);
 	}
 	
-	public Loan actualizar(Long id, Loan prestamoDetalles) 
+	private void autorizar(Loan loan) 
 	{
-	    return loanRepositorio.findById(id)
-	        .map(prestamo -> {
-	            prestamo.setFechaInicio(prestamoDetalles.getFechaInicio());
-	            prestamo.setFechaDevolucionEsperada(prestamoDetalles.getFechaDevolucionEsperada());
-	            prestamo.setFechaDevolucionReal(prestamoDetalles.getFechaDevolucionReal());
-	            prestamo.setEstado(prestamoDetalles.getEstado());
-	            return loanRepositorio.save(prestamo);
-	        })
-	        .orElseThrow(() -> new RuntimeException("Libro no encontrado con id " + id));
+		User principal = SecurityUtils.getCurrentUser();
+		
+		boolean isOwner = loan.getUsuario().getIdUsuario()
+				.equals(principal.getIdUsuario());
+		
+		boolean canReadAny = SecurityUtils.hasAuthority("loan:update:any:user");
+		
+		if (!isOwner && !canReadAny) {
+			throw new AuthorizationDeniedException("You cannot access this loan");
+		}
 	}
+	
+	private List<Book> getBooks(List<Integer> libros) {
+	    List<Book> books = bookRepositorio.findByIdLibroIn(libros);
+
+	    if (books.size() != libros.size()) {
+	        throw new EntityNotFoundException("One or more books not found");
+	    }
+	    return books;
+	}
+	
 }

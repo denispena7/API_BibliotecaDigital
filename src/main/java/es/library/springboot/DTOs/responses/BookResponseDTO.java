@@ -1,12 +1,10 @@
-package es.library.springboot.DTOs;
+package es.library.springboot.DTOs.responses;
 
 import java.util.List;
 
-import jakarta.validation.constraints.NotNull;
-
-public record BookDTO(
+public record BookResponseDTO(
 	    long idLibro,
-	    @NotNull String tituloLibro,
+	    String tituloLibro,
 	    int anioPublicacion,
 	    String sinopsisLibro,
 		String estadoLibro,

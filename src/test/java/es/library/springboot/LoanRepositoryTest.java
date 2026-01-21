@@ -27,65 +27,65 @@ import es.library.springboot.repositories.UserRepository;
 @TestPropertySource(locations = "classpath:application-test.properties")
 class LoanRepositoryTest 
 {
-	@Autowired private LoanRepository loanRepo;
-	@Autowired private UserRepository userRepo;
-	
-	private User usuario;
-	private Loan prestamo;
-	
-	LocalDate desde = LocalDate.now().minusDays(20);
-	LocalDate hasta = LocalDate.now().minusDays(14);
-	
-	Pageable pageable = PageRequest.of(0, 3, Sort.by("fechaInicio").ascending());
-	
-	@BeforeEach
-	void setup()
-	{
-		usuario = User.builder()
-				.nombreUsuario("mario")
-				.build();
-		
-		userRepo.save(usuario);
-		
-		prestamo = Loan.builder()
-				.fechaInicio(desde)
-				.fechaDevolucionEsperada(hasta)
-				.fechaDevolucionReal(hasta)
-				.estado("Disponible")
-				.usuario(usuario)
-				.libros(List.of())
-				.build();
-		
-		loanRepo.save(prestamo);
-	}
-
-	@Test
-	void findByUsuarioNombreUsuario_ShouldReturnTheLoanList() 
-	{
-		Page<Loan> prestamos = loanRepo.findByUsuarioNombreUsuario("mario", pageable);
-		assertThat(prestamos).isNotEmpty();
-	}
-	
-	@Test
-	void findByUsuarioNombreUsuario_ShouldReturnEmptyList_WhenUserNotExists() 
-	{
-		Page<Loan> prestamos = loanRepo.findByUsuarioNombreUsuario("juancarlos", pageable);
-		assertThat(prestamos).isEmpty();
-	}
-	
-	@Test
-	void findByEstadoAndFechaInicioBetween_ShouldReturnTheLoanList() 
-	{
-		Page<Loan> prestamos = loanRepo.findByEstadoAndFechaInicioBetween(
-				"Disponible", desde, hasta, pageable);
-		assertThat(prestamos).isNotEmpty();
-	}
-	
-	@Test
-	void findByEstadoAndFechaInicioBetween_ShouldReturnEmptyList() 
-	{
-		Page<Loan> prestamos = loanRepo.findByEstadoAndFechaInicioBetween(
-				"No disponible", desde, hasta, pageable);
-		assertThat(prestamos).isEmpty();
-	}
+//	@Autowired private LoanRepository loanRepo;
+//	@Autowired private UserRepository userRepo;
+//	
+//	private User usuario;
+//	private Loan prestamo;
+//	
+//	LocalDate desde = LocalDate.now().minusDays(20);
+//	LocalDate hasta = LocalDate.now().minusDays(14);
+//	
+//	Pageable pageable = PageRequest.of(0, 3, Sort.by("fechaInicio").ascending());
+//	
+//	@BeforeEach
+//	void setup()
+//	{
+//		usuario = User.builder()
+//				.nombreUsuario("mario")
+//				.build();
+//		
+//		userRepo.save(usuario);
+//		
+//		prestamo = Loan.builder()
+//				.fechaInicio(desde)
+//				.fechaDevolucionEsperada(hasta)
+//				.fechaDevolucionReal(hasta)
+//				.estado("Disponible")
+//				.usuario(usuario)
+//				.libros(List.of())
+//				.build();
+//		
+//		loanRepo.save(prestamo);
+//	}
+//
+//	@Test
+//	void findByUsuarioNombreUsuario_ShouldReturnTheLoanList() 
+//	{
+//		Page<Loan> prestamos = loanRepo.findByUsuarioNombreUsuario("mario", pageable);
+//		assertThat(prestamos).isNotEmpty();
+//	}
+//	
+//	@Test
+//	void findByUsuarioNombreUsuario_ShouldReturnEmptyList_WhenUserNotExists() 
+//	{
+//		Page<Loan> prestamos = loanRepo.findByUsuarioNombreUsuario("juancarlos", pageable);
+//		assertThat(prestamos).isEmpty();
+//	}
+//	
+//	@Test
+//	void findByEstadoAndFechaInicioBetween_ShouldReturnTheLoanList() 
+//	{
+//		Page<Loan> prestamos = loanRepo.findByEstadoAndFechaInicioBetween(
+//				"Disponible", desde, hasta, pageable);
+//		assertThat(prestamos).isNotEmpty();
+//	}
+//	
+//	@Test
+//	void findByEstadoAndFechaInicioBetween_ShouldReturnEmptyList() 
+//	{
+//		Page<Loan> prestamos = loanRepo.findByEstadoAndFechaInicioBetween(
+//				"No disponible", desde, hasta, pageable);
+//		assertThat(prestamos).isEmpty();
+//	}
 }

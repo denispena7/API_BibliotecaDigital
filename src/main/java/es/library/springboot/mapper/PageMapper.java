@@ -5,7 +5,7 @@ import java.util.function.Function;
 import org.mapstruct.Mapper;
 import org.springframework.data.domain.Page;
 
-import es.library.springboot.DTOs.PageResponse;
+import es.library.springboot.DTOs.responses.PageResponse;
 
 @Mapper(componentModel = "spring")
 public interface PageMapper

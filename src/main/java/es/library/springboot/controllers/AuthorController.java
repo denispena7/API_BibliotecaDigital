@@ -1,60 +1,62 @@
 package es.library.springboot.controllers;
 
-import java.util.List;
-
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-import es.library.springboot.DTOs.ApiResponse;
-import es.library.springboot.DTOs.AuthorDTO;
-import es.library.springboot.DTOs.BookDTO;
-import es.library.springboot.DTOs.PageResponse;
-import es.library.springboot.models.Author;
+import es.library.springboot.DTOs.requests.AuthorRequestDTO;
+import es.library.springboot.DTOs.responses.ApiResponse;
+import es.library.springboot.DTOs.responses.AuthorResponseDTO;
+import es.library.springboot.DTOs.responses.BookResponseDTO;
+import es.library.springboot.DTOs.responses.PageResponse;
 import es.library.springboot.services.AuthorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/authors")
+@RequestMapping("/api/v1/authors")
 public class AuthorController 
 {
 	private final AuthorService service;
 	
-//	@GetMapping("/consulta_autores")
-//	public List<AuthorDTO> listarAutores()
-//	{
-//		return service.obtenerAutores();
-//	}
-	
-	@GetMapping(headers = "Api-Version=1")
-	public ResponseEntity<ApiResponse<PageResponse<AuthorDTO>>> listarAutores(
+	@PreAuthorize("hasAuthority('author:read')")
+	@GetMapping
+	public ResponseEntity<ApiResponse<PageResponse<AuthorResponseDTO>>> listarAutores(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size)
 	{
-		PageResponse<AuthorDTO> authors = service.obtenerAutoresPaginados(page, size);
+		PageResponse<AuthorResponseDTO> authors = service.obtenerAutoresPaginados(page, size);
 		
 		return ResponseEntity.ok(
-				ApiResponse.<PageResponse<AuthorDTO>>builder()
+				ApiResponse.<PageResponse<AuthorResponseDTO>>builder()
 				.data(authors)
 				.ok(true)
 				.message("success")
 				.build());
 	}
 
-	@GetMapping(value = "/{nombreAutor}/books", headers = "Api-Version=1")
-	public ResponseEntity<ApiResponse<List<BookDTO>>> obtenerLibros(@PathVariable String nombreAutor)
+	@PreAuthorize("hasAuthority('author:read')")
+	@GetMapping(value = "/{nombreAutor}/books")
+	public ResponseEntity<ApiResponse<PageResponse<BookResponseDTO>>> obtenerLibros(
+			@PathVariable String nombreAutor,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size)
 	{
-		List<BookDTO> books = service.obtenerLibrosPorAutor(nombreAutor);
+		PageResponse<BookResponseDTO> books = service.obtenerLibrosPorAutor(nombreAutor, page, size);
 		
 		return ResponseEntity.ok(
-				ApiResponse.<List<BookDTO>>builder()
+				ApiResponse.<PageResponse<BookResponseDTO>>builder()
 					.data(books)
 	                .ok(true)
 	                .message("success")
@@ -62,15 +64,50 @@ public class AuthorController
 				);
 	}
 	
-	@PostMapping("/alta_autor")
-	public Author altaAutor(@RequestBody Author autor)
+	@PreAuthorize("hasAuthority('author:create')")
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ApiResponse<AuthorResponseDTO>> altaAutor(
+			@Valid @RequestPart("data") AuthorRequestDTO autor,
+			@RequestPart(value = "file", required = false) MultipartFile file)
 	{
-		return service.guardarAutor(autor);
+		AuthorResponseDTO author = service.guardarAutor(autor, file);
+		
+		return ResponseEntity.ok(
+				ApiResponse.<AuthorResponseDTO>builder()
+					.data(author)
+	                .ok(true)
+	                .message("Author created")
+	                .build()
+				);
 	}
 	
-	@PutMapping("act_autor/{id}")
-	public Author actualizarAutor(@PathVariable Long id, @RequestBody Author autor)
+	@PreAuthorize("hasAuthority('author:update')")
+	@PutMapping(
+			value = "/{id}",
+			consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+	)
+	public ResponseEntity<ApiResponse<AuthorResponseDTO>> actualizarAutor(
+			@PathVariable Long id, 
+			@Valid @RequestPart("data") AuthorRequestDTO autor,
+			@RequestPart(value = "file", required = false) MultipartFile file
+	)
 	{
-		return service.actualizar(id, autor);
+		AuthorResponseDTO author = service.actualizarAutor(id, autor, file);
+		
+		return ResponseEntity.ok(
+				ApiResponse.<AuthorResponseDTO>builder()
+					.data(author)
+	                .ok(true)
+	                .message("Author updated")
+	                .build()
+				);
+	}
+	
+	@PreAuthorize("hasAuthority('author:delete')")
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> bajaAutor(@PathVariable Long id)
+	{
+		service.eliminarAutor(id);
+	    return ResponseEntity.noContent().build();
 	}
 }

@@ -1,17 +1,19 @@
 package es.library.springboot.mapper;
 
-import java.util.List;
-
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import es.library.springboot.DTOs.CategoryDTO;
+import es.library.springboot.DTOs.requests.CategoryRequestDTO;
+import es.library.springboot.DTOs.responses.CategoryResponseDTO;
 import es.library.springboot.models.Category;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper 
 {
-	CategoryDTO toCatDTO(Category category);
-	//Category toCatEnt(CategoryDTO catDTO);
-	List<CategoryDTO> toCatDTOList(List<Category> categorias);
-	//List<Category> toCatEntList(List<CategoryDTO> catsDTO);
+	CategoryResponseDTO toCatDTO(Category category);
+	
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "nombreCategoria", source = "nombreCategoria")
+	Category toCatEnt(CategoryRequestDTO catDTO);
 }
