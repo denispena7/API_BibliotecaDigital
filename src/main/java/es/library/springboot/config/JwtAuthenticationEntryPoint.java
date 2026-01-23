@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.library.springboot.DTOs.responses.ApiResponse;
+import es.library.springboot.DTOs.responses.WraperResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -26,7 +26,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint
             AuthenticationException authException
     ) throws IOException {
 
-        ApiResponse<?> body = new ApiResponse<>(
+        WraperResponse<?> body = new WraperResponse<>(
                 null,
                 false,
                 "User not authenticated"

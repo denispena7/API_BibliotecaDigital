@@ -18,34 +18,34 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import io.jsonwebtoken.ExpiredJwtException;
 
 
-import es.library.springboot.DTOs.responses.ApiResponse;
+import es.library.springboot.DTOs.responses.WraperResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler
 {
     @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<ApiResponse<?>> notFound(ExpiredJwtException e) 
+    public ResponseEntity<WraperResponse<?>> notFound(ExpiredJwtException e) 
     {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponse<>(null, false, e.getMessage()));
+                .body(new WraperResponse<>(null, false, e.getMessage()));
     }
 	
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiResponse<?>> notFound(EntityNotFoundException e) 
+    public ResponseEntity<WraperResponse<?>> notFound(EntityNotFoundException e) 
     {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponse<>(null, false, e.getMessage()));
+                .body(new WraperResponse<>(null, false, e.getMessage()));
     }
 
     @ExceptionHandler(ValidateException.class)
-    public ResponseEntity<ApiResponse<?>> badRequest(ValidateException e)
+    public ResponseEntity<WraperResponse<?>> badRequest(ValidateException e)
     {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiResponse<>(null, false, e.getMessage()));
+                .body(new WraperResponse<>(null, false, e.getMessage()));
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<?>> handleValidationErrors(
+    public ResponseEntity<WraperResponse<?>> handleValidationErrors(
             MethodArgumentNotValidException ex) {
 
     	Map<String, String> errors = ex.getBindingResult()
@@ -58,13 +58,13 @@ public class GlobalExceptionHandler
     	        ));
 
         return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(errors, false, "Validation error"));
+                .body(new WraperResponse<>(errors, false, "Validation error"));
     }
     
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
-    public ResponseEntity<ApiResponse<?>> handleMediaType(HttpMediaTypeNotSupportedException e) {
+    public ResponseEntity<WraperResponse<?>> handleMediaType(HttpMediaTypeNotSupportedException e) {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-                .body(new ApiResponse<>(
+                .body(new WraperResponse<>(
                         null,
                         false,
                         "Invalid content type. Use multipart/form-data"
@@ -73,37 +73,37 @@ public class GlobalExceptionHandler
 
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<?>> internal(Exception e)
+    public ResponseEntity<WraperResponse<?>> internal(Exception e)
     {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>(null, false, "Internal Server Error"));
+                .body(new WraperResponse<>(null, false, "Internal Server Error"));
     }
     
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiResponse<?>> handleBadCredentials(BadCredentialsException e)
+    public ResponseEntity<WraperResponse<?>> handleBadCredentials(BadCredentialsException e)
     {
     	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-    			.body(new ApiResponse<>(null, false, "Username or password incorrect"));
+    			.body(new WraperResponse<>(null, false, "Username or password incorrect"));
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ApiResponse<?>> handleAuthorizedDenied(AuthorizationDeniedException e)
+    public ResponseEntity<WraperResponse<?>> handleAuthorizedDenied(AuthorizationDeniedException e)
     {
     	return ResponseEntity.status(HttpStatus.FORBIDDEN)
-    			.body(new ApiResponse<>(null, false, "Accesss denied: required permissions to carry out this action"));
+    			.body(new WraperResponse<>(null, false, "Accesss denied: required permissions to carry out this action"));
     }
     
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiResponse<?>> handleAuthorizedDenied(AccessDeniedException e)
+    public ResponseEntity<WraperResponse<?>> handleAuthorizedDenied(AccessDeniedException e)
     {
     	return ResponseEntity.status(HttpStatus.FORBIDDEN)
-    			.body(new ApiResponse<>(null, false, "Access denied: User not authenticated"));
+    			.body(new WraperResponse<>(null, false, "Access denied: User not authenticated"));
     }
     
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<ApiResponse<?>> handleUsernameNotFound(UsernameNotFoundException e)
+    public ResponseEntity<WraperResponse<?>> handleUsernameNotFound(UsernameNotFoundException e)
     {
     	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-    			.body(new ApiResponse<>(null, false, e.getMessage()));
+    			.body(new WraperResponse<>(null, false, e.getMessage()));
     }
 }

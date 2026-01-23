@@ -18,7 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.library.springboot.DTOs.responses.ApiResponse;
+import es.library.springboot.DTOs.responses.WraperResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 
@@ -99,8 +99,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
         response.setStatus(status.value());
         response.setContentType("application/json");
 
-        ApiResponse<?> apiResponse =
-                new ApiResponse<>(null, false, message);
+        WraperResponse<?> apiResponse =
+                new WraperResponse<>(null, false, message);
 
         response.getWriter()
                 .write(objectMapper.writeValueAsString(apiResponse));

@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class ApiResponse<T> 
+public class WraperResponse<T> 
 {
 	private T data;
 	private boolean ok;
