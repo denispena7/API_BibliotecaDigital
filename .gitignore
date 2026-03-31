@@ -40,9 +40,6 @@ logs/
 .env
 *.env
 
-# Config sensibles
-application-prod.properties
-
 # Archivos locales
 imagenes/
 data/
