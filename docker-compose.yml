@@ -1,0 +1,38 @@
+services:
+  biblioteca:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+#      - C:/imagenes:/data/images
+      - images_data:/data/images
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: biblioteca
+      MYSQL_USER: adminBiblioteca
+      MYSQL_PASSWORD: adminPassword
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql_data:/var/lib/mysql
+#      - ./Biblioteca/src/main/resources/db/migration:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql_data:
+  images_data:
